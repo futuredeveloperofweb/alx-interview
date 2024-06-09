@@ -1,49 +1,25 @@
-#!/usr/bin/env node
-
+#!/usr/bin/node
 const request = require('request');
+const API_URL = 'https://swapi-api.hbtn.io/api';
 
-const movieId = process.argv[2];
-if (!movieId) {
-  console.error('Usage: ./0-starwars_characters.js <Movie ID>');
-  process.exit(1);
-}
-
-const movieEndpoint = 'https://swapi-api.alx-tools.com/api/films/' + movieId;
-
-function fetchCharacterNames(characterList, index) {
-  if (index >= characterList.length) {
-    return;
-  }
-
-  request(characterList[index], (error, response, body) => {
-    if (error) {
-      console.error('Error fetching character:', error);
-    } else if (response.statusCode !== 200) {
-      console.error(`Error: Received status code ${response.statusCode}`);
-    } else {
-      try {
-        const character = JSON.parse(body);
-        console.log(character.name);
-      } catch (parseError) {
-        console.error('Error parsing character JSON:', parseError);
-      }
+if (process.argv.length > 2) {
+  request(`${API_URL}/films/${process.argv[2]}/`, (err, _, body) => {
+    if (err) {
+      console.log(err);
     }
-    fetchCharacterNames(characterList, index + 1);
+    const charactersURL = JSON.parse(body).characters;
+    const charactersName = charactersURL.map(
+      url => new Promise((resolve, reject) => {
+        request(url, (promiseErr, __, charactersReqBody) => {
+          if (promiseErr) {
+            reject(promiseErr);
+          }
+          resolve(JSON.parse(charactersReqBody).name);
+        });
+      }));
+
+    Promise.all(charactersName)
+      .then(names => console.log(names.join('\n')))
+      .catch(allErr => console.log(allErr));
   });
 }
-
-request(movieEndpoint, (error, response, body) => {
-  if (error) {
-    console.error('Error fetching movie:', error);
-  } else if (response.statusCode !== 200) {
-    console.error(`Error: Received status code ${response.statusCode}`);
-  } else {
-    try {
-      const movie = JSON.parse(body);
-      const characterList = movie.characters;
-      fetchCharacterNames(characterList, 0);
-    } catch (parseError) {
-      console.error('Error parsing movie JSON:', parseError);
-    }
-  }
-});
