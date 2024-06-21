@@ -1,12 +1,17 @@
 #!/usr/bin/python3
-"""Change making module.
-"""
+''' Module 0: Change comes from within'''
 
 
 def makeChange(coins, total):
-    """Determines the fewest number of coins needed to meet a given
-    amount total when given a pile of coins of different values.
-    """
+    '''A method that determines the fewest number of coins needed
+    to meet a given amount total
+
+    args:
+        coins:  is a list of the values of the coins in your possession
+        total: is the given amount of coins
+
+    return: fewest number of coins needed to meet total
+    '''
     if total <= 0:
         return 0
     rem = total
